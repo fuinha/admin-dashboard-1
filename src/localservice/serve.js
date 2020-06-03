@@ -39,7 +39,7 @@ if (process.mainModule.filename === __filename) {
   const router = jsonServer.router("db.json");
   server.use(middlewares);
   server.use(router);
-  server.listen(3000, () => {
+  server.listen(3005, () => {
     console.log("JSON Server is running");
   });
 } else module.exports = loadFiles;
