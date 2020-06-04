@@ -20,7 +20,7 @@ const loadInitiatives = () => {
   for (const fileName of files) {
     const initObj = JSON.parse(fs.readFileSync(validPath + fileName, "utf8"));
     const shapedInit = {
-      ...initObj,
+      ...initObj[1],
       id: initiatives.length,
     };
     initiatives.push(shapedInit);
