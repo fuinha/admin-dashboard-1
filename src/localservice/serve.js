@@ -1,6 +1,13 @@
 // @flow
+
 const fs = require("fs");
 const jsonServer = require("json-server");
+import type {
+  UnshapedInitiativeV1,
+  UnshapedInitiativeV2,
+  ShapedInitiativeV010,
+  ShapedInitiativeV020,
+} from "./ShapedInitiative";
 const server = jsonServer.create();
 const middlewares = jsonServer.defaults();
 
@@ -14,18 +21,84 @@ const loadFiles = () => {
 
 const loadInitiatives = () => {
   const initiatives = [];
-  const files = fs
+  const files: Array<string> = fs
     .readdirSync(validPath)
     .filter((f) => RegExp(".json$").test(f));
   for (const fileName of files) {
     const initObj = JSON.parse(fs.readFileSync(validPath + fileName, "utf8"));
-    const shapedInit = {
-      ...initObj[1],
-      id: initiatives.length,
-    };
-    initiatives.push(shapedInit);
+    initiatives.push(getShapedInitiativeFile(initObj));
   }
   return initiatives;
+};
+
+const getShapedInitiativeFile = (fileJSON) => {
+  if (fileJSON[0].type === "0.1.0") {
+    return getShapedV010File((fileJSON: UnshapedInitiativeV1));
+  }
+  return getShapedV020File((fileJSON: UnshapedInitiativeV2));
+};
+
+const getShapedV010File = (
+  fileJSON: UnshapedInitiativeV1
+): ShapedInitiativeV010 => {
+  const {type, version} = fileJSON[0];
+  const {
+    title,
+    timestampIso,
+    weight,
+    completed,
+    dependencies,
+    references,
+    contributions,
+    champions,
+  } = fileJSON[1];
+
+  return {
+    type,
+    version,
+    title,
+    timestampIso,
+    incompleteWeight: weight.incomplete,
+    completeWeight: weight.complete,
+    completed,
+    dependencies,
+    references,
+    contributions,
+    champions,
+  };
+};
+
+const getShapedV020File = (
+  fileJSON: UnshapedInitiativeV2
+): ShapedInitiativeV020 => {
+  const {type, version} = fileJSON[0];
+  const {
+    title,
+    timestampIso,
+    weight,
+    completed,
+    dependencies,
+    references,
+    contributions,
+    champions,
+  } = fileJSON[1];
+
+  return {
+    type,
+    version,
+    title,
+    timestampIso,
+    completed,
+    champions,
+    incompleteWeight: weight.incomplete,
+    completeWeight: weight.complete,
+    dependenciesId: dependencies && dependencies.identities, // flowlint-line prop-missing:off
+    dependenciesUrl: dependencies && dependencies.urls,
+    referencesId: references && references.identities, // flowlint-line prop-missing:off
+    referencesUrl: references && references.urls,
+    contributionsId: contributions && contributions.identities, // flowlint-line prop-missing:off
+    contributionsUrl: contributions && contributions.urls,
+  };
 };
 
 // TODO load contributors on the client side
