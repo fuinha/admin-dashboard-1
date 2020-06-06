@@ -8,15 +8,24 @@ import type {
   ShapedInitiativeV010,
   ShapedInitiativeV020,
 } from "./ShapedInitiative";
+const getGraph = require("./getGraph");
 const server = jsonServer.create();
 const middlewares = jsonServer.defaults();
-
 // TODO: process path input parameter and ensure it's a valid cred repo
 const validPath = "../sc-cred/initiatives/";
-const loadFiles = () => {
+const loadFiles = async () => {
   const db = {};
+  db.graphs = [{id: 0, graph: await loadGraph()}];
   db.initiatives = loadInitiatives();
   fs.writeFileSync("db.json", JSON.stringify(db), "utf8");
+};
+
+// without context, it might look very sloppy to avoid deserliazing this graph file
+// but the production app will handle all this in the browser anyhow, so for now
+// we'll defer optimizing the local server's handling of this file
+const loadGraph = async () => {
+  const graphPath: string = await getGraph("../sc-cred/");
+  return fs.promises.readFile(graphPath, "utf8");
 };
 
 const loadInitiatives = () => {
@@ -112,11 +121,12 @@ const getShapedV020File = (
 // };
 
 if (process.mainModule.filename === __filename) {
-  loadFiles();
-  const router = jsonServer.router("db.json");
-  server.use(middlewares);
-  server.use(router);
-  server.listen(3005, () => {
-    console.log("JSON Server is running");
+  loadFiles().then(() => {
+    const router = jsonServer.router("db.json");
+    server.use(middlewares);
+    server.use(router);
+    server.listen(3005, () => {
+      console.log("JSON Server is running");
+    });
   });
 } else module.exports = loadFiles;
