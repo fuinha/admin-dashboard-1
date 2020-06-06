@@ -10,6 +10,7 @@ type UnshapedInitiaveType = {|
 |};
 
 export type ShapedInitiativeV010 = {|
+  id: number,
   type: string,
   version: string,
   title: string,
@@ -24,6 +25,7 @@ export type ShapedInitiativeV010 = {|
 |};
 
 export type ShapedInitiativeV020 = {|
+  id: number,
   type: string,
   version: string,
   title: string,

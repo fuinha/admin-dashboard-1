@@ -1,5 +1,5 @@
 import React from "react";
-import {Admin, Resource, EditGuesser} from "react-admin";
+import {Admin, Resource, ListGuesser} from "react-admin";
 import {
   InitiativeList,
   InitiativeEdit,

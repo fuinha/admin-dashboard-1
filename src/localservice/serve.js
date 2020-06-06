@@ -26,20 +26,21 @@ const loadInitiatives = () => {
     .filter((f) => RegExp(".json$").test(f));
   for (const fileName of files) {
     const initObj = JSON.parse(fs.readFileSync(validPath + fileName, "utf8"));
-    initiatives.push(getShapedInitiativeFile(initObj));
+    initiatives.push(getShapedInitiativeFile(initObj, initiatives.length));
   }
   return initiatives;
 };
 
-const getShapedInitiativeFile = (fileJSON) => {
+const getShapedInitiativeFile = (fileJSON, idx: number) => {
   if (fileJSON[0].type === "0.1.0") {
-    return getShapedV010File((fileJSON: UnshapedInitiativeV1));
+    return getShapedV010File((fileJSON: UnshapedInitiativeV1), idx);
   }
-  return getShapedV020File((fileJSON: UnshapedInitiativeV2));
+  return getShapedV020File((fileJSON: UnshapedInitiativeV2), idx);
 };
 
 const getShapedV010File = (
-  fileJSON: UnshapedInitiativeV1
+  fileJSON: UnshapedInitiativeV1,
+  idx: number
 ): ShapedInitiativeV010 => {
   const {type, version} = fileJSON[0];
   const {
@@ -54,6 +55,7 @@ const getShapedV010File = (
   } = fileJSON[1];
 
   return {
+    id: idx,
     type,
     version,
     title,
@@ -69,7 +71,8 @@ const getShapedV010File = (
 };
 
 const getShapedV020File = (
-  fileJSON: UnshapedInitiativeV2
+  fileJSON: UnshapedInitiativeV2,
+  idx: number
 ): ShapedInitiativeV020 => {
   const {type, version} = fileJSON[0];
   const {
@@ -84,6 +87,7 @@ const getShapedV020File = (
   } = fileJSON[1];
 
   return {
+    id: idx,
     type,
     version,
     title,
