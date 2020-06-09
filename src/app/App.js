@@ -6,8 +6,10 @@ import {
   InitiativeCreate,
 } from "./components/Initiatives";
 import jsonServerProvider from "ra-data-json-server";
-
+import {initGraph, initPlugins} from "./graph";
 const dataProvider = jsonServerProvider("http://localhost:3005");
+initGraph(dataProvider);
+//initPlugins(dataProvider);
 const App = () => (
   <Admin dataProvider={dataProvider}>
     <Resource

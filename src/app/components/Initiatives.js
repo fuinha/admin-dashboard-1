@@ -1,6 +1,8 @@
 // @flow
 import React from "react";
+import {users} from "../graph";
 import {
+  AutocompleteArrayInput,
   List,
   Datagrid,
   DateField,
@@ -29,7 +31,6 @@ export const InitiativeList = (props: Object) => (
 );
 
 export const InitiativeEdit = (props: Object) => {
-  console.log(props);
   return (
     <Edit {...props}>
       <SimpleForm>
@@ -37,15 +38,30 @@ export const InitiativeEdit = (props: Object) => {
         <DateInput label="Date" source="timestampIso" />
         <NumberInput
           label="Weight While Incomplete"
-          source="incompleteWeight"
+          source="weight.incomplete"
         />
-        <NumberInput label="Weight When Completed" source="completeWeight" />
+        <NumberInput label="Weight When Completed" source="weight.complete" />
         <BooleanInput label="Completed" source="completed" />
+        {/*
         <ArrayInput source="champions">
           <SimpleFormIterator>
-            <TextInput label="champion" />
+            <AutocompleteInput label="champion" />
           </SimpleFormIterator>
         </ArrayInput>
+        */}
+        <AutocompleteArrayInput
+          source="champions"
+          parse={(v) => {
+            console.log("outgoing: ", v);
+            return v;
+          }}
+          allowDuplicates={false}
+          translateChoice={false}
+          choices={users}
+          optionValue="address"
+          optionText="description"
+          label="Champions"
+        />
       </SimpleForm>
     </Edit>
   );

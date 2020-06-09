@@ -3,7 +3,7 @@ const fs = require("fs");
 const pathJoin = require("path").join;
 const rootDir = "../sc-cred/";
 
-const getGraph = async (
+const getFile = async (
   dir: string,
   targetFile: string = "weightedGraph.json"
 ): Promise<string | void> => {
@@ -17,7 +17,7 @@ const getGraph = async (
   let search = files
     .filter((f) => f.isDirectory())
     .map(async (f) => {
-      return await getGraph(pathJoin(dir, f.name), targetFile);
+      return await getFile(pathJoin(dir, f.name), targetFile);
     });
   if (search.length > 0) {
     let results: Array<string | void> = await Promise.all(search);
@@ -26,8 +26,8 @@ const getGraph = async (
 };
 
 if (process.mainModule.filename === __filename) {
-  getGraph(rootDir).then(console.log).catch(console.error);
-} else module.exports = getGraph;
+  getFile(rootDir).then(console.log).catch(console.error);
+} else module.exports = getFile;
 
 type Dirent = {|
   name: string,
