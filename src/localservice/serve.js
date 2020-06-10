@@ -18,6 +18,7 @@ const loadFiles = async () => {
   const db = {};
   db.graphs = [{id: 0, graph: await loadGraph()}];
   db.plugins = [{id: 0, plugins: await loadPlugins()}];
+  db.project = [{id: 0, project: await loadProject()}];
   db.initiatives = loadInitiatives();
   fs.writeFileSync("db.json", JSON.stringify(db), "utf8");
 };
@@ -36,6 +37,14 @@ const loadPlugins = async () => {
     "pluginDeclarations.json"
   );
   return fs.promises.readFile(pluginDecPath, "utf8");
+};
+
+const loadProject = async () => {
+  const projectPath: string = await getFile(
+    `../${projectDir}/`,
+    "project.json"
+  );
+  return fs.promises.readFile(projectPath, "utf8");
 };
 
 const loadInitiatives = () => {
@@ -62,7 +71,7 @@ const getShapedInitiativeFile = (fileJSON, fName, idx: number) => {
       `Intitiative file must be version 0.2.0. Please upgrade ${fName}`
     );
   }
-  return getShapedV020File((fileJSON: UnshapedInitiativeV2), idx);
+  return getShapedV020File((fileJSON: UnshapedInitiativeV2), fName);
 };
 
 const getShapedV010File = (
@@ -99,7 +108,7 @@ const getShapedV010File = (
 
 const getShapedV020File = (
   fileJSON: UnshapedInitiativeV2,
-  idx: number
+  fileName: string
 ): ShapedInitiativeV020 => {
   const {type, version} = fileJSON[0];
   const {
@@ -114,7 +123,7 @@ const getShapedV020File = (
   } = fileJSON[1];
 
   return {
-    id: idx,
+    id: fileName,
     type,
     version,
     title,
@@ -141,7 +150,7 @@ if (process.mainModule.filename === __filename) {
       server.use(middlewares);
       server.use(router);
       server.listen(3005, () => {
-        console.log("JSON Server is running");
+        console.info("JSON Server is running");
       });
     })
     .catch(console.error);

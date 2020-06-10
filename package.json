@@ -27,9 +27,9 @@
     "sourcecred": "https://github.com/sourcecred/sourcecred"
   },
   "scripts": {
-    "build": "node scripts/build.js",
+    "build": "parcel build src/index.html",
     "serve": "flow-node src/localservice/serve.js",
-    "start": " yarn serve & parcel src/index.html --no-cache"
+    "start": " yarn serve & parcel src/index.html --no-cache --open"
   },
   "browserslist": {
     "production": [

@@ -10,8 +10,6 @@ const getFile = async (
   const files: Array<Dirent> = await fs.promises.readdir(dir, {
     withFileTypes: true,
   });
-  // console.log("dir: ", dir);
-  // console.log("files: ", files);
   if (files.map((f) => f.name).includes(targetFile))
     return pathJoin(dir, targetFile);
   let search = files

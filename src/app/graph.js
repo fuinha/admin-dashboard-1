@@ -6,6 +6,7 @@ export let graph;
 export let plugins;
 export let users = [];
 export let activities = [];
+export let project;
 
 export async function initGraph(apiProvider): Promise<void> {
   const {
@@ -16,6 +17,15 @@ export async function initGraph(apiProvider): Promise<void> {
   await initPlugins(apiProvider);
   loadActivity();
   loadUsers();
+  await loadProject(apiProvider);
+}
+
+export async function loadProject(apiProvider): Promise<void> {
+  const {
+    data: {project: serializedProjectJSON},
+  } = await apiProvider.getOne("project", {id: 0});
+  const projectJSON = JSON.parse(serializedProjectJSON);
+  project = projectJSON;
 }
 export async function initPlugins(apiProvider): Promise<void> {
   const {
@@ -23,7 +33,6 @@ export async function initPlugins(apiProvider): Promise<void> {
   } = await apiProvider.getOne("plugins", {id: 0});
   const pluginsJSON = JSON.parse(serializedPluginsJSON);
   plugins = fromJSON(pluginsJSON);
-  console.log(plugins);
 }
 export function loadActivity() {
   const activityPrefixes = plugins.reduce((acc, {nodeTypes}) => {
@@ -34,9 +43,7 @@ export function loadActivity() {
     );
     return acc;
   }, []);
-  console.log(activityPrefixes);
   activityPrefixes.forEach((prefix) => {
-    console.log("prefix: ", prefix);
     let activityIterator = graph.nodes({prefix});
     let nextActivity = activityIterator.next();
     while (!nextActivity.done) {
@@ -47,7 +54,6 @@ export function loadActivity() {
       nextActivity = activityIterator.next();
     }
   });
-  console.log("activities: ", activities);
 }
 export function loadUsers() {
   const userPrefixes = plugins.reduce((acc, {userTypes}) => {
@@ -55,7 +61,6 @@ export function loadUsers() {
     return acc;
   }, []);
   userPrefixes.forEach((prefix) => {
-    console.log("prefix: ", prefix);
     let userIterator = graph.nodes({prefix});
     let nextUser = userIterator.next();
     while (!nextUser.done) {
@@ -66,5 +71,4 @@ export function loadUsers() {
       nextUser = userIterator.next();
     }
   });
-  console.log("users: ", users);
 }
