@@ -19,6 +19,7 @@ import {
   SimpleFormIterator,
   BooleanInput,
   regex,
+  Loading,
 } from "react-admin";
 
 export const InitiativeList = (props: Object) => (
@@ -31,10 +32,13 @@ export const InitiativeList = (props: Object) => (
   </List>
 );
 
-export const InitiativeEdit = (props: Object) => {
-  const initiatives = activities.filter((a) =>
+export const InitiativeEdit = (scData) => (props: Object) => {
+  console.log("derp: ", scData);
+  if (!scData.loaded) return <Loading />;
+  const initiatives = scData.activities.filter((a) =>
     /\u0000sourcecred\u0000initiatives\u0000initiative\u0000/.test(a.address)
   );
+  console.log("init: ", initiatives);
   return (
     <Edit title={`Edit Initiative: ${props.id}`} {...props}>
       <SimpleForm>
@@ -46,12 +50,13 @@ export const InitiativeEdit = (props: Object) => {
         />
         <NumberInput label="Weight When Completed" source="weight.complete" />
         <BooleanInput label="Completed" source="completed" />
+        {/**/}
         <AutocompleteArrayInput
           source="champions"
-          format={userTextFinder}
+          format={userTextFinder(scData)}
           allowDuplicates={false}
           translateChoice={false}
-          choices={users}
+          choices={scData.users}
           optionValue="address"
           optionText="description"
           label="Champions"
@@ -76,8 +81,8 @@ export const InitiativeEdit = (props: Object) => {
           source="references"
           allowDuplicates={false}
           translateChoice={false}
-          choices={activities}
-          format={activityFinder}
+          choices={scData.activities}
+          format={activityFinder(scData)}
           parse={(v) => {
             v = {entries: v};
 
@@ -88,6 +93,7 @@ export const InitiativeEdit = (props: Object) => {
           label="References"
           suggestionLimit={10}
         />
+        {/**/}
         <ArrayInput label="Contributions" source="contributions.entries">
           <SimpleFormIterator>
             <TextInput label="Contribution Name" source="title" />
@@ -98,10 +104,10 @@ export const InitiativeEdit = (props: Object) => {
               parse={(v) => {
                 return v;
               }}
-              format={userTextFinder}
+              format={userTextFinder(scData)}
               allowDuplicates={false}
               translateChoice={false}
-              choices={users}
+              choices={scData.users}
               optionValue="address"
               optionText="description"
               label="Contributors"
@@ -114,14 +120,13 @@ export const InitiativeEdit = (props: Object) => {
   );
 };
 
-export const InitiativeCreate = (props: Object) => {
+export const InitiativeCreate = (scData) => (props: Object) => {
   const initiatives = activities.filter((a) =>
     /\u0000sourcecred\u0000initiatives\u0000initiative\u0000/.test(a.address)
   );
   return (
     <Create title="Create New Initiative" {...props}>
       <SimpleForm>
-        <TextInput label="File Name" source="id" validate={validateFilename} />
         <TextInput label="Title" source="title" />
         <DateInput label="Date" source="timestampIso" />
         <NumberInput
@@ -130,12 +135,13 @@ export const InitiativeCreate = (props: Object) => {
         />
         <NumberInput label="Weight When Completed" source="weight.complete" />
         <BooleanInput label="Completed" source="completed" />
+        {/**/}
         <AutocompleteArrayInput
           source="champions"
-          format={userTextFinder}
+          format={userTextFinder(scData)}
           allowDuplicates={false}
           translateChoice={false}
-          choices={users}
+          choices={scData.users}
           optionValue="address"
           optionText="description"
           label="Champions"
@@ -160,10 +166,11 @@ export const InitiativeCreate = (props: Object) => {
           source="references"
           allowDuplicates={false}
           translateChoice={false}
-          choices={activities}
-          format={activityFinder}
+          choices={scData.activities}
+          format={activityFinder(scData)}
           parse={(v) => {
             v = {entries: v};
+
             return v;
           }}
           optionValue="address"
@@ -171,6 +178,7 @@ export const InitiativeCreate = (props: Object) => {
           label="References"
           suggestionLimit={10}
         />
+        {/**/}
         <ArrayInput label="Contributions" source="contributions.entries">
           <SimpleFormIterator>
             <TextInput label="Contribution Name" source="title" />
@@ -181,10 +189,10 @@ export const InitiativeCreate = (props: Object) => {
               parse={(v) => {
                 return v;
               }}
-              format={userTextFinder}
+              format={userTextFinder(scData)}
               allowDuplicates={false}
               translateChoice={false}
-              choices={users}
+              choices={scData.users}
               optionValue="address"
               optionText="description"
               label="Contributors"
@@ -203,31 +211,31 @@ const validateFilename = regex(
 );
 
 // hacky temporary solution to implementing the url resolver in the frontend
-const userTextFinder = (v) => {
+const userTextFinder = (scData) => (v) => {
   if (!v) v = [];
   let resolvedV = [...v];
 
   v.forEach((c, idx) => {
     if (/^http/.test(c)) {
       const splitUrl = c.split("/");
-      let resolvedUser = users.find((u) => u.description.includes(c));
+      let resolvedUser = scData.users.find((u) => u.description.includes(c));
       if (resolvedUser) {
         resolvedV[idx] = resolvedUser.address;
         return;
       }
-      const {identities} = project[1];
+      const {identities} = scData.project[1];
       const resolvedIdentity = identities.find(({username, aliases}) =>
         aliases.find((a) => a.includes(splitUrl[splitUrl.length - 1]))
       );
       if (resolvedIdentity) {
-        let resolvedUser = users.find((u) =>
+        let resolvedUser = scData.users.find((u) =>
           u.description.includes(resolvedIdentity.username)
         );
         resolvedV[idx] = resolvedUser.address;
         return;
       }
 
-      let fuzzyResolvedUser = users.find((u) =>
+      let fuzzyResolvedUser = scData.users.find((u) =>
         u.description.includes(splitUrl[splitUrl.length - 1])
       );
 
@@ -251,12 +259,12 @@ const initiativeFinder = (initiatives) => (v) => {
   return v.entries;
 };
 
-const activityFinder = (v) => {
+const activityFinder = (scData) => (v) => {
   if (!v) v = {};
   if (!v.urls) v.urls = [];
   if (!v.entries) v.entries = [];
   v.urls.forEach((url) => {
-    const shapedUrl = activities.find((i) => i.address.includes(url));
+    const shapedUrl = scData.activities.find((i) => i.address.includes(url));
     if (shapedUrl) v.entries.push(shapedUrl);
   });
   return v.entries;
