@@ -22,15 +22,19 @@ import {
   Loading,
 } from "react-admin";
 
-export const InitiativeList = (props: Object) => (
-  <List {...props}>
-    <Datagrid rowClick="edit">
-      <TextField label="Initiative Name" source="title" />
-      <BooleanField label="Completed" source="completed" />
-      <DateField label="Last Updated" source="timestampIso" />
-    </Datagrid>
-  </List>
-);
+export const InitiativeList = (scData) => (props: Object) => {
+  if (!scData.loaded) return <Loading />;
+
+  return (
+    <List {...props}>
+      <Datagrid rowClick="edit">
+        <TextField label="Initiative Name" source="title" />
+        <BooleanField label="Completed" source="completed" />
+        <DateField label="Last Updated" source="timestampIso" />
+      </Datagrid>
+    </List>
+  );
+};
 
 export const InitiativeEdit = (scData) => (props: Object) => {
   console.log("derp: ", scData);

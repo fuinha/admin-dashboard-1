@@ -22,7 +22,7 @@ const App = () => {
     <Admin theme={theme} dataProvider={dataProvider}>
       <Resource
         name="initiatives"
-        list={InitiativeList}
+        list={InitiativeList(scData)}
         edit={InitiativeEdit(scData)}
         create={InitiativeCreate(scData)}
       />
